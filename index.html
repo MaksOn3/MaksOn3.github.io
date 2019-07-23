@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<title>Snake</title>
+</head>
+<body>
+	<canvas id="canvas"></canvas>
+	<script type="text/javascript">
+		var cvs = document.getElementById('canvas'),
+			ctx = cvs.getContext("2d");
+
+		//Snake block size
+		var snakeSize = 10;
+		//Margin between blocks
+		var snakeBlockMargin = 2;
+		//Snake color
+		var snakeColor = "green";
+		//Snake speed
+		var snakeSpeed = 100;
+		//Snake position
+		var snakePositionX = [48, 48, 48];
+		var snakePositionY = [48, 60, 72];
+		//Snake move direction
+		var snakeMoveDirection = "top";
+		//Food position
+		var foodPosX, foodPosY;
+		//Food color
+		var foodColor = "red";
+		//Field size
+		fieldSizeX = cvs.width = 502;
+		fieldSizeY = cvs.height = 406;
+		//Field color
+		var fieldColor = "black";
+		ctx.fillRect(0, 0, cvs.width, cvs.height);
+
+		//Clear field
+		function clearField(color){
+			ctx.fillStyle = color;
+			ctx.fillRect(0, 0, cvs.width, cvs.height);
+		};
+
+		//Draw food
+		function foodDraw(color, size, fieldSizeX, fieldSizeY){
+			var posXY = [];
+			//pos X
+			posXY[0] = Math.floor(Math.random() * fieldSizeX);
+			posXY[0] -= posXY[0] % 12;
+			posXY[1] = Math.floor(Math.random() * fieldSizeY);
+			posXY[1] -= posXY[1] % 12;
+
+			ctx.fillStyle = color;
+			ctx.fillRect(posXY[0], posXY[1], size, size);
+
+			return posXY;
+		};
+
+		//Keys
+		document.addEventListener("keydown", function(e){
+			//up
+			if(e.keyCode == 38){
+				if (snakeMoveDirection != "bottom") {
+					snakeMoveDirection = "top";
+				}
+			//down
+			}else if(e.keyCode == 40){
+				if (snakeMoveDirection != "top") {
+					snakeMoveDirection = "bottom";
+				}
+			//left
+			}else if(e.keyCode == 37){
+				if (snakeMoveDirection != "right") {
+					snakeMoveDirection = "left";
+				}
+			//right
+			}else if(e.keyCode == 39){
+				if (snakeMoveDirection != "left") {
+					snakeMoveDirection = "right";
+				}
+			}
+		});
+
+		//Draw snake
+		// for(i = 0; i < snakePositionX.length; i++){
+		// 	ctx.fillStyle = snakeColor;
+		// 	ctx.fillRect(snakePositionX[i], snakePositionY[i], snakeSize, snakeSize);
+		// }
+
+		var aFoodXY = foodDraw(foodColor, snakeSize, fieldSizeX, fieldSizeY);
+
+		//Snake move function
+		setInterval(function(){
+			//Delete the tale of snake in canvas
+			ctx.fillStyle = fieldColor;
+			ctx.fillRect(snakePositionX[snakePositionX.length-1], snakePositionY[snakePositionY.length-1], snakeSize, snakeSize);
+
+			//Calculate move position
+			if(snakeMoveDirection == "top"){
+				//Move array elements X and Y to right side
+				snakePositionY = snakePositionY.concat(snakePositionY.splice(0, snakePositionY.length-1));
+				snakePositionX = snakePositionX.concat(snakePositionX.splice(0, snakePositionX.length-1));
+				//add new position for the head of snake
+				snakePositionY[0] = snakePositionY[1] - (snakeSize + snakeBlockMargin);
+				snakePositionX[0] = snakePositionX[1];
+			}else if(snakeMoveDirection == "bottom"){
+				//Move array elements X and Y to right side
+				snakePositionY = snakePositionY.concat(snakePositionY.splice(0, snakePositionY.length-1));
+				snakePositionX = snakePositionX.concat(snakePositionX.splice(0, snakePositionX.length-1));
+				//add new position for the head of snake
+				snakePositionY[0] = snakePositionY[1] + (snakeSize + snakeBlockMargin);
+				snakePositionX[0] = snakePositionX[1];
+			}else if(snakeMoveDirection == "left"){
+				//Move array elements X and Y to right side
+				snakePositionX = snakePositionX.concat(snakePositionX.splice(0, snakePositionX.length-1));
+				snakePositionY = snakePositionY.concat(snakePositionY.splice(0, snakePositionY.length-1));
+				//add new position for the head of snake
+				snakePositionX[0] = snakePositionX[1] - (snakeSize + snakeBlockMargin);
+				snakePositionY[0] = snakePositionY[1];
+			}else if(snakeMoveDirection == "right"){
+				//Move array elements X and Y to right side
+				snakePositionX = snakePositionX.concat(snakePositionX.splice(0, snakePositionX.length-1));
+				snakePositionY = snakePositionY.concat(snakePositionY.splice(0, snakePositionY.length-1));
+				//add new position for the head of snake
+				snakePositionX[0] = snakePositionX[1] + (snakeSize + snakeBlockMargin);
+				snakePositionY[0] = snakePositionY[1];
+			}
+
+			//'Teleport' snake to another field border if snake come to border
+			if(snakePositionY[0] < 0){
+				snakePositionY[0] = fieldSizeY - snakeSize;
+			}else if(snakePositionY[0] > fieldSizeY){
+				snakePositionY[0] = 0;
+			}else if(snakePositionX[0] < 0){
+				snakePositionX[0] = fieldSizeX - snakeSize;
+			}else if(snakePositionX[0] > fieldSizeX){
+				snakePositionX[0] = 0;
+			}
+
+			 //Draw snake in canvas
+			for(i = 0; i < snakePositionX.length; i++){
+				ctx.fillStyle = snakeColor;
+				ctx.fillRect(snakePositionX[i], snakePositionY[i], snakeSize, snakeSize);
+			}
+
+			//Check if snakes head has the same coords as food
+			if(snakePositionX[0] >= aFoodXY[0] && snakePositionX[0] <= (aFoodXY[0] + snakeSize) && snakePositionY[0] >= aFoodXY[1] && snakePositionY[0] <= (aFoodXY[1] + snakeSize)){
+				//Add new block of snake in tale
+				snakePositionX.push(aFoodXY[0]);
+				snakePositionY.push(aFoodXY[1]);
+
+				//Generate new food
+				aFoodXY = foodDraw(foodColor, snakeSize, fieldSizeX, fieldSizeY);
+			}
+
+			//Check if snakes head has the same coord as its body
+			// if(snakePositionX[0] >= aFoodXY[0] && snakePositionX[0] <= (aFoodXY[0] + snakeSize) && snakePositionY[0] >= aFoodXY[1] && snakePositionY[0] <= (aFoodXY[1] + snakeSize)){
+			// 	//Add new block of snake in tale
+			// 	snakePositionX.push(aFoodXY[0]);
+			// 	snakePositionY.push(aFoodXY[1]);
+
+			// 	//Generate new food
+			// 	aFoodXY = foodDraw(foodColor, snakeSize, fieldSizeX, fieldSizeY);
+			// }
+
+		}, snakeSpeed);
+
+	</script>
+</body>
+</html>
